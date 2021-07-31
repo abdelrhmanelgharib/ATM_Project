@@ -1,49 +1,44 @@
-/*
- * APP.c
- *
- *  Created on: Jul 27, 2021
- *      Author: Al Badr
+/**
+ * @file APP.c
+ * @author Vicious
+ * @brief Source File
+ * @version 0.1
+ * @date 2021-07-31
+ * 
+ * @copyright Copyright (c) 2021
+ * 
  */
 
-#include "DataTypes.h"
-#include "BIT_MATH.h"
-#include "DIO_Interface.h"
-#include "UART_int.h"
-#include "SER_UART_int.h"
-#include "I2C_Interface.h"
-#include "EEPROM_interface.h"
-#include "LCD16x2.h"
-#include "KeyPad_int.h"
-#include "EXTI_int.h"
-#include "SPI_Interface.h"
-#include <util/delay.h>
-#include "MOTOR_Interface.h"
-#include "ADC_Interface.h"
-#include "LM_35_Interface.h"
 #include "APP.h"
 
+/***************************Global Var********************************/
 extern volatile uint8_t card_gflag;
-
-uint8_t *Admin = "ADMIN";
-uint8_t *User = "USER";
-
-uint8_t Max_Amount[255] = {1, 1, 1, 1};
-uint8_t Data[255] = {1, 1, 1, 1, 1, 1, 1, 1, 1};
-
+uint8_t Max_Amount[50] = {1, 1, 1, 1};
+volatile uint8_t CallBackFLag = 0;
 extern uint8_t gflag;
+/*******************************************************************/
 
+/**
+ * @brief Call Back Function 
+ * 
+ */
 void EX_Callback(void)
 {
 	if (gflag == 0 || card_gflag == '0')
 	{
-		SER_UARTvoidSendString("Invalid");
+		SER_UARTvoidSendString((uint8_t *)"Invalid");
 	}
 	else
 	{
-		SER_UARTvoidSendString("card and atm is valid");
-		USER_Mode();
+		SER_UARTvoidSendString((uint8_t *)"card and atm is valid");
+		CallBackFLag = VALID;
 	}
 }
+
+/**
+ * @brief Initialize all Peripheral
+ * 
+ */
 void APP_Init(void)
 {
 	UART_ENInit();
@@ -60,17 +55,23 @@ void APP_Init(void)
 	DIO_voidInpullUp(PORT_D, PIN2);
 	EXTI_ENEnable(EXTI_INT0);
 	EXTI_ENTriggerEdge(EXTI_INT0, FALLING_EDGE);
+	EXTI_SetCallBack(EXTI_INT0, EX_Callback);
 }
 
+/**
+ * @brief Home Screen for ATM ask for ATM OR Temperature
+ * 
+ * @return uint8_t keypad Pressed Value
+ */
 uint8_t ADC_ATM(void)
 {
 	uint8_t value = 0;
-
+	/* CLR LCD */
 	lcd_clear();
 
-	lcd_sendString("1-Temp");
+	lcd_sendString((uint8_t *)"1-Temp");
 	lcd_SetPosition(1, 0);
-	lcd_sendString("2-ATM");
+	lcd_sendString((uint8_t *)"2-ATM");
 
 	value = KEYPAD_u8Read();
 	while (value == DEFAULT_KEY)
@@ -81,68 +82,75 @@ uint8_t ADC_ATM(void)
 	return value;
 }
 
+/**
+ * @brief This function for Admin Mode to store data on eeprom and enter new number, balance and MaxAmount 
+ * 
+ */
 void ADMIN_Mode(void)
 {
+	uint8_t *Admin = (uint8_t *)"ADMIN";
+	/* used for take password, card number and balance */
+	uint8_t Data[55] = {1, 1, 1, 1, 1, 1, 1, 1, 1};
 
 	gflag = 0;
-	SER_UARTvoidSendString("Enter Password of Admin Mode: ");
+	SER_UARTvoidSendString((uint8_t *)"Enter Password of Admin Mode: ");
 	SER_UARTvoidReceiveString(Data);
 	if (String_u8Comp(Data, Admin) == STRING_EQUL)
 	{
-		SER_UARTvoidSendString("Correct Password");
-		UART_ENSendData('\r');
-		SER_UARTvoidSendString("Card Number : ");
+		SER_UARTvoidSendString((uint8_t *)"Correct Password");
+		SER_UARTvoidSendString((uint8_t *)"Card Number : ");
 		SER_UARTvoidReceiveString(Data);
 		/* Send Card Number To EEPROM */
 		eeprom_send_string(Data, 0x01);
 
 		/* Send Balance to EEPROM */
-		SER_UARTvoidSendString("Enter Balance: ");
+		SER_UARTvoidSendString((uint8_t *)"Enter Balance: ");
 		SER_UARTvoidReceiveString(Data);
 		eeprom_send_string(Data, 0xB1);
 
 		/* Send Max Amount to EEPROM */
-		SER_UARTvoidSendString("Enter Max Amount: ");
+		SER_UARTvoidSendString((uint8_t *)"Enter Max Amount: ");
 		SER_UARTvoidReceiveString(Max_Amount);
 		eeprom_send_string(Max_Amount, 0xF3);
 	}
 	else
 	{
-		SER_UARTvoidSendString("Wrong Password ");
+		SER_UARTvoidSendString((uint8_t *)"Wrong Password ");
 		ADC_ATM();
 	}
 }
 
+/**
+ * @brief This Function For user Mode to check user password and deposit and turn on motor if Approved
+ * 
+ */
 void USER_Mode(void)
 {
 	uint8_t i = 0;
 	uint8_t value = 0;
 	uint8_t Dep_money[5] = {1, 1, 1, 1};
 	uint8_t Temp[255] = {1, 1, 1, 1, 1};
-	static uint8_t Card_Pass[5];
-	static uint8_t Flag = 0;
+	static volatile uint8_t Card_Pass[5] = {1, 1, 1, 1};
+	static uint8_t Flag = 3;
 
 	gflag = 1;
 	switch (Flag)
 	{
-	case 0:
-		SER_UARTvoidSendString("gET pass");
+	case 3:
 		Get_Pass(Card_Pass);
 		Flag = 5;
 		break;
 	default:
-		SER_UARTvoidSendString("Default");
 		break;
 	}
+
 	if (Pass_check(Card_Pass))
 	{
 
 		lcd_clear();
-		lcd_sendString("enter deposit amount");
+		lcd_sendString((uint8_t *)"enter deposit amount");
 		/*receive the balance of user from eeprom*/
 		eeprom_recieve_string(Temp, 0xB1);
-		//Data[5]='\0';
-		SER_UARTvoidSendString(Temp);
 
 		while (i != 4)
 		{
@@ -157,70 +165,76 @@ void USER_Mode(void)
 			}
 		}
 		Dep_money[i] = '\0';
-		SER_UARTvoidSendString(Dep_money);
-		UART_ENSendData('\r');
 
-		UART_ENSendData('\r');
 		eeprom_recieve_string(Max_Amount, 0xF3);
-		//Max_Amount[5]='\0';
-		SER_UARTvoidSendString(Max_Amount);
 
 		uint32_t max_dec = String_u8ToNumb(Max_Amount);
 		uint32_t dep_dec = String_u8ToNumb(Dep_money);
 		uint32_t bal_dec = String_u8ToNumb(Temp);
 
-		if (Compare_Money(max_dec, dep_dec) == "invalid")
+		if (Compare_Money(max_dec, dep_dec) == INVALID)
 		{
 			lcd_clear();
-			lcd_sendString("invalid: ");
+			lcd_sendString((uint8_t *)"invalid: ");
 			lcd_SetPosition(1, 0);
-			lcd_sendString("exceed maxamount");
+			lcd_sendString((uint8_t *)"exceed maxamount");
 			_delay_ms(1000);
 		}
-		else if (Compare_Money(bal_dec, dep_dec) == "invalid")
+		else if (Compare_Money(bal_dec, dep_dec) == INVALID)
 		{
 			lcd_clear();
-			lcd_sendString("invalid: ");
+			lcd_sendString((uint8_t *)"invalid: ");
 			lcd_SetPosition(1, 0);
-			lcd_sendString("exceed balance");
+			lcd_sendString((uint8_t *)"exceed balance");
 			_delay_ms(1000);
 		}
 		else
 		{
 			lcd_clear();
-			lcd_sendString("Approved");
+			lcd_sendString((uint8_t *)"Approved");
 			MOTOR_voidRotateClkWise(1, 0);
-			_delay_ms(5000);
+			_delay_ms(1000);
 			MOTOR_voidStop();
 		}
 	}
 }
 
-uint8_t *Compare_Money(uint32_t Max_money, uint32_t User_money)
+/**
+ * @brief compare user enter money and balance
+ * 
+ * @param Max_money MAX AMOUNT Cal withdraw
+ * @param User_money Deposit 
+ * @return uint8_t* VALID | INVALID
+ */
+uint8_t Compare_Money(uint32_t Max_money, uint32_t User_money)
 {
 
 	if (Max_money < User_money)
 	{
-		return "invalid";
+		return INVALID;
 	}
 	else
 	{
-		return "valid";
+		return VALID;
 	}
 }
 
+/**
+ * @brief Check for Passwrod 
+ * 
+ * @param Card_Pass store passwrod on Card_Pass
+ * @return uint8_t CORRECT | INCORRECT
+ */
 uint8_t Pass_check(uint8_t *Card_Pass)
 {
 	uint8_t Pin[5];
 	uint8_t i = 0;
 	uint8_t value;
-	//	uint8_t Card_Pass[5];
+
 	uint8_t Flag = 0;
 
-	//Get_Pass(Card_Pass);
-
 	lcd_clear();
-	lcd_sendString("Please Enter PIN");
+	lcd_sendString((uint8_t *)"Please Enter PIN");
 
 	while (i != 4)
 	{
@@ -235,43 +249,51 @@ uint8_t Pass_check(uint8_t *Card_Pass)
 	}
 	Pin[4] = '\0';
 
-	SER_UARTvoidSendString(Pin);
-
-	//SER_UARTvoidSendString(Card_Pass);
-
 	lcd_clear();
-	lcd_sendString("PASS finished");
+	lcd_sendString((uint8_t *)"PASS finished");
 	_delay_ms(1000);
 
 	if (String_u8Comp(Pin, Card_Pass) == STRING_EQUL)
 	{
 		lcd_clear();
-		lcd_sendString("PASS Correct");
-		Flag = 1;
+		lcd_sendString((uint8_t *)"PASS Correct");
+		Flag = CORRECT;
 		_delay_ms(1000);
 	}
 	else
 	{
 		lcd_clear();
-		lcd_sendString("PASS incorrect");
-		Flag = 0;
+		lcd_sendString((uint8_t *)"PASS incorrect");
+		Flag = INCORRECT;
 		_delay_ms(1000);
 	}
 
 	return Flag;
 }
 
+/**
+ * @brief Display Temp on Lcd if user select Temp Mode
+ * 
+ */
 void TEMP(void)
 {
 	uint8_t value = 0;
 	value = LM35_U16Read(0);
 	lcd_clear();
-	lcd_sendString("temp is ");
+	lcd_sendString((uint8_t *)"temp is ");
 	_delay_ms(1000);
 	lcd_SetPosition(1, 0);
 	lcd_sendNum(value);
-	_delay_ms(5000);
+	_delay_ms(3000);
 }
+
+/**
+ * @brief Compare two string
+ * 
+ * @param Str1 first string
+ * @param Str2 second string
+ * @return uint8_t string is equal = 0 or not equal =1 
+ */
 uint8_t String_u8Comp(uint8_t *Str1, uint8_t *Str2)
 {
 	uint8_t i = 0, Flag = 0;
@@ -288,27 +310,30 @@ uint8_t String_u8Comp(uint8_t *Str1, uint8_t *Str2)
 	return Flag;
 }
 
+/**
+ * @brief send garbag value to slave to receive his own data
+ * 
+ * @param str receive data form slave
+ */
 void Get_Pass(uint8_t *str)
 {
-
-	//SPI_VidSendByte('g');
-	//uint8_t b1 = SPI_U8RecieveByte();
-	//UART_ENSendData(b1);
 	SPI_VidSendByte('g');
 	str[0] = SPI_U8RecieveByte();
-	UART_ENSendData(str[0]);
 	SPI_VidSendByte('g');
 	str[1] = SPI_U8RecieveByte();
-	UART_ENSendData(str[1]);
 	SPI_VidSendByte('g');
 	str[2] = SPI_U8RecieveByte();
-	UART_ENSendData(str[2]);
 	SPI_VidSendByte('x');
 	str[3] = SPI_U8RecieveByte();
-	UART_ENSendData(str[3]);
 	str[4] = '\0';
-	SER_UARTvoidSendString(str);
 }
+
+/**
+ * @brief Convert String to Number 
+ * 
+ * @param Str Pointer to the first element in the array
+ * @return uint32_t Number after Converted to Real Numb
+ */
 uint32_t String_u8ToNumb(uint8_t *Str)
 {
 	uint8_t i;
