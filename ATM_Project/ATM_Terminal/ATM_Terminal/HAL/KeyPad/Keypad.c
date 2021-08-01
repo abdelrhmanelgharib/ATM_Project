@@ -12,11 +12,11 @@
 #include "KeyPad_int.h"
 #include "avr/delay.h"
 
-static uint8_t gKEYPADArr[4][3] = {
-    {'1', '2', '3'},
-    {'4', '5', '6'},
-    {'7', '8', '9'},
-    {'*', '0', '#'}};
+static uint8_t gKEYPADArr[4][4] = {
+    {'1', '2', '3', '/'},
+    {'4', '5', '6', '*'},
+    {'7', '8', '9', '-'},
+    {'*', '0', '#', '+'}};
 
 /**
  * @brief Initialize KeyPad Pins

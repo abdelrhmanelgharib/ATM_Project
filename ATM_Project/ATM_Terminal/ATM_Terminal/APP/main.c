@@ -65,8 +65,8 @@ int main()
 		}
 		else
 		{
-			lcd_clear();
-			lcd_sendString((uint8_t *)"Wrong Enter");
+			LCD_voidCLRDisplay();
+			LCD_voidWriteString((uint8_t *)"Wrong Enter");
 			_delay_ms(1000);
 		}
 	}

@@ -19,7 +19,7 @@
 #include "SER_UART_int.h"
 #include "I2C_Interface.h"
 #include "EEPROM_interface.h"
-#include "LCD16x2.h"
+#include "LCD_Interface.h"
 #include "KeyPad_int.h"
 #include "EXTI_int.h"
 #include "SPI_Interface.h"

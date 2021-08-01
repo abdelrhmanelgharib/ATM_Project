@@ -44,7 +44,7 @@ void APP_Init(void)
 	UART_ENInit();
 	I2C_MasterInit();
 	KEYPAD_voidInit();
-	lcd_init();
+	LCD_voidInit();
 	SPI_VidInitMaster();
 	MOTOR_voidInit();
 	ADC_VoidInit();
@@ -67,11 +67,11 @@ uint8_t ADC_ATM(void)
 {
 	uint8_t value = 0;
 	/* CLR LCD */
-	lcd_clear();
+	LCD_voidCLRDisplay();
 
-	lcd_sendString((uint8_t *)"1-Temp");
-	lcd_SetPosition(1, 0);
-	lcd_sendString((uint8_t *)"2-ATM");
+	LCD_voidWriteString((uint8_t *)"1-Temp");
+	LCD_voidGoto(1, 0);
+	LCD_voidWriteString((uint8_t *)"2-ATM");
 
 	value = KEYPAD_u8Read();
 	while (value == DEFAULT_KEY)
@@ -147,8 +147,8 @@ void USER_Mode(void)
 	if (Pass_check(Card_Pass))
 	{
 
-		lcd_clear();
-		lcd_sendString((uint8_t *)"enter deposit amount");
+		LCD_voidCLRDisplay();
+		LCD_voidWriteString((uint8_t *)"enter deposit amount");
 		/*receive the balance of user from eeprom*/
 		eeprom_recieve_string(Temp, 0xB1);
 
@@ -159,8 +159,8 @@ void USER_Mode(void)
 			{
 
 				Dep_money[i] = value;
-				lcd_SetPosition(1, 1 + i);
-				lcd_sendChar(value);
+				LCD_voidGoto(1, 1 + i);
+				LCD_voidWriteChar(value);
 				i++;
 			}
 		}
@@ -174,24 +174,24 @@ void USER_Mode(void)
 
 		if (Compare_Money(max_dec, dep_dec) == INVALID)
 		{
-			lcd_clear();
-			lcd_sendString((uint8_t *)"invalid: ");
-			lcd_SetPosition(1, 0);
-			lcd_sendString((uint8_t *)"exceed maxamount");
+			LCD_voidCLRDisplay();
+			LCD_voidWriteString((uint8_t *)"invalid: ");
+			LCD_voidGoto(1, 0);
+			LCD_voidWriteString((uint8_t *)"exceed maxamount");
 			_delay_ms(1000);
 		}
 		else if (Compare_Money(bal_dec, dep_dec) == INVALID)
 		{
-			lcd_clear();
-			lcd_sendString((uint8_t *)"invalid: ");
-			lcd_SetPosition(1, 0);
-			lcd_sendString((uint8_t *)"exceed balance");
+			LCD_voidCLRDisplay();
+			LCD_voidWriteString((uint8_t *)"invalid: ");
+			LCD_voidGoto(1, 0);
+			LCD_voidWriteString((uint8_t *)"exceed balance");
 			_delay_ms(1000);
 		}
 		else
 		{
-			lcd_clear();
-			lcd_sendString((uint8_t *)"Approved");
+			LCD_voidCLRDisplay();
+			LCD_voidWriteString((uint8_t *)"Approved");
 			MOTOR_voidRotateClkWise(1, 0);
 			_delay_ms(1000);
 			MOTOR_voidStop();
@@ -233,8 +233,8 @@ uint8_t Pass_check(uint8_t *Card_Pass)
 
 	uint8_t Flag = 0;
 
-	lcd_clear();
-	lcd_sendString((uint8_t *)"Please Enter PIN");
+	LCD_voidCLRDisplay();
+	LCD_voidWriteString((uint8_t *)"Please Enter PIN");
 
 	while (i != 4)
 	{
@@ -242,28 +242,28 @@ uint8_t Pass_check(uint8_t *Card_Pass)
 		if (value != DEFAULT_KEY)
 		{
 			Pin[i] = value;
-			lcd_SetPosition(1, 1 + i);
-			lcd_sendChar('*');
+			LCD_voidGoto(1, 1 + i);
+			LCD_voidWriteChar('*');
 			i++;
 		}
 	}
 	Pin[4] = '\0';
 
-	lcd_clear();
-	lcd_sendString((uint8_t *)"PASS finished");
+	LCD_voidCLRDisplay();
+	LCD_voidWriteString((uint8_t *)"PASS finished");
 	_delay_ms(1000);
 
 	if (String_u8Comp(Pin, Card_Pass) == STRING_EQUL)
 	{
-		lcd_clear();
-		lcd_sendString((uint8_t *)"PASS Correct");
+		LCD_voidCLRDisplay();
+		LCD_voidWriteString((uint8_t *)"PASS Correct");
 		Flag = CORRECT;
 		_delay_ms(1000);
 	}
 	else
 	{
-		lcd_clear();
-		lcd_sendString((uint8_t *)"PASS incorrect");
+		LCD_voidCLRDisplay();
+		LCD_voidWriteString((uint8_t *)"PASS incorrect");
 		Flag = INCORRECT;
 		_delay_ms(1000);
 	}
@@ -279,11 +279,11 @@ void TEMP(void)
 {
 	uint8_t value = 0;
 	value = LM35_U16Read(0);
-	lcd_clear();
-	lcd_sendString((uint8_t *)"temp is ");
+	LCD_voidCLRDisplay();
+	LCD_voidWriteString((uint8_t *)"temp is ");
 	_delay_ms(1000);
-	lcd_SetPosition(1, 0);
-	lcd_sendNum(value);
+	LCD_voidGoto(1, 0);
+	LCD_voidPrintUnsignedInteger(value);
 	_delay_ms(3000);
 }
 
