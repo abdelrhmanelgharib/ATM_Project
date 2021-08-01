@@ -12,11 +12,10 @@
 #include "KeyPad_int.h"
 #include "avr/delay.h"
 
-static uint8_t gKEYPADArr[4][4] = {
-    {'1', '2', '3', '/'},
-    {'4', '5', '6', '*'},
-    {'7', '8', '9', '-'},
-    {'*', '0', '#', '+'}};
+static uint8_t gKEYPADArr[3][3] = {
+    {'1', '2', '3'},
+    {'4', '5', '6'},
+    {'7', '8', '9'}};
 
 /**
  * @brief Initialize KeyPad Pins
@@ -32,12 +31,12 @@ void KEYPAD_voidInit(void)
     DIO_voidSetPinDirection(KEYPAD_PORT, KEYPAD_OUTPUT0, OUTPUT);
     DIO_voidSetPinDirection(KEYPAD_PORT, KEYPAD_OUTPUT1, OUTPUT);
     DIO_voidSetPinDirection(KEYPAD_PORT, KEYPAD_OUTPUT2, OUTPUT);
-    DIO_voidSetPinDirection(KEYPAD_PORT, KEYPAD_OUTPUT3, OUTPUT);
+    // DIO_voidSetPinDirection(KEYPAD_PORT, KEYPAD_OUTPUT3, OUTPUT);
 
     DIO_voidSetPinValue(KEYPAD_PORT, KEYPAD_OUTPUT0, HIGH);
     DIO_voidSetPinValue(KEYPAD_PORT, KEYPAD_OUTPUT1, HIGH);
     DIO_voidSetPinValue(KEYPAD_PORT, KEYPAD_OUTPUT2, HIGH);
-    DIO_voidSetPinValue(KEYPAD_PORT, KEYPAD_OUTPUT3, HIGH);
+    // DIO_voidSetPinValue(KEYPAD_PORT, KEYPAD_OUTPUT3, HIGH);
 }
 
 /**

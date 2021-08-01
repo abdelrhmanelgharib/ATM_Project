@@ -17,6 +17,9 @@ extern volatile uint8_t CallBackFLag;
 
 int main()
 {
+	DIO_voidSetPinDirection(PORT_A, PIN2, OUTPUT);
+	DIO_voidSetPinValue(PORT_A, PIN2, LOW);
+
 	uint8_t Data[55];
 	uint8_t value = 0;
 	uint8_t *Admin = (uint8_t *)"ADMIN";
