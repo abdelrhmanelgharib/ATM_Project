@@ -22,7 +22,7 @@ EN_ERRORSTATE_t UART_ENInit(void)
     EN_ERRORSTATE_t Enstate;
     Enstate = E_OK;
     /* Clear  URSEL to update UBRRH*/
-    CLRBIT(UCSRC, URSEL);
+    // CLRBIT(UCSRC, URSEL);
     /* Boud Rate */
     UBRRH = HIGHUBRR;
     UBRRL = LOWUBRR;
@@ -39,8 +39,8 @@ EN_ERRORSTATE_t UART_ENInit(void)
 /* Select STOP Bit */
 #if STOPBIT == _1BIT
     /* Set URSEL to update UCSRC*/
-    SETBIT(UCSRC, URSEL);
-    CLRBIT(UCSRC, USBS);
+    // SETBIT(UCSRC, URSEL);
+    // CLRBIT(UCSRC, USBS);
 
 #elif STOPBIT == _2BIT
     /* Set URSEL to update UCSRC*/
@@ -52,10 +52,10 @@ EN_ERRORSTATE_t UART_ENInit(void)
 #if UART_PARITY == DISABLED
 
     /* Set URSEL to update UCSRC*/
-    SETBIT(UCSRC, URSEL);
+    // SETBIT(UCSRC, URSEL);
 
-    CLRBIT(UCSRC, UPM0);
-    CLRBIT(UCSRC, UPM1);
+    // CLRBIT(UCSRC, UPM0);
+    // CLRBIT(UCSRC, UPM1);
     /* Parity is Odd */
 
 #elif UART_PARITY == ODD
@@ -94,10 +94,10 @@ EN_ERRORSTATE_t UART_ENInit(void)
     CLRBIT(UCSRB, UCSZ2);
 #elif DATAFRAM == _8BIT
     /* Set URSEL to update UCSRC*/
-    SETBIT(UCSRC, URSEL);
-    SETBIT(UCSRC, UCSZ0);
-    SETBIT(UCSRC, UCSZ1);
-    CLRBIT(UCSRB, UCSZ2);
+    // SETBIT(UCSRC, URSEL);
+    // SETBIT(UCSRC, UCSZ0);
+    // SETBIT(UCSRC, UCSZ1);
+    // CLRBIT(UCSRB, UCSZ2);
 #elif DATAFRAM == _9BIT
     /* Set URSEL to update UCSRC*/
     SETBIT(UCSRC, URSEL);

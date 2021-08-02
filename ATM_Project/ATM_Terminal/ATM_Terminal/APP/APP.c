@@ -74,11 +74,12 @@ uint8_t ADC_ATM(void)
 	LCD_voidWriteString((uint8_t *)"2-ATM");
 
 	value = KEYPAD_u8Read();
+
 	while (value == DEFAULT_KEY)
 	{
-
 		value = KEYPAD_u8Read();
 	}
+
 	return value;
 }
 

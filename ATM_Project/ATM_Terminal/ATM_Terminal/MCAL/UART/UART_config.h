@@ -38,7 +38,7 @@
    8MHz, 9600 BaudRate 
 */
 #define HIGHUBRR         0
-#define LOWUBRR          51
+#define LOWUBRR          103
 
 
 
