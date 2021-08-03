@@ -165,22 +165,12 @@ uint8_t UART_u8ReceiveData(void)
 /**
  * @brief Receive Data without Polling
  * 
- * @param Data 
+ * 
  * @return uint8_t Data From Register
  */
-uint8_t UART_u8ReceiveNoBlock(uint8_t *Data)
+uint8_t UART_u8ReceiveNoBlock(void)
 {
-    uint8_t status = 0;
-    if (GETBIT(UCSRA, RXC))
-    {
-        *Data = UDR;
-        status = 1;
-    }
-    else
-    {
-        /* do nothing */
-    }
-    return status;
+    return UDR;
 }
 
 /**
@@ -201,6 +191,26 @@ void UART_voidRXInterruptEnable(void)
 {
     SETBIT(UCSRB, RXCIE);
     SETBIT(SREG, I_BIT);
+}
+
+/**
+ * @brief Disable Transmit Interrupt
+ * 
+ */
+void UART_voidTXInterruptDisable(void)
+{
+    CLRBIT(UCSRB, TXCIE);
+    CLRBIT(SREG, I_BIT);
+}
+
+/**
+ * @brief Disable Receive Interrupt
+ * 
+ */
+void UART_voidRXInterruptDisable(void)
+{
+    CLRBIT(UCSRB, RXCIE);
+    CLRBIT(SREG, I_BIT);
 }
 
 /**
@@ -264,10 +274,17 @@ void __vector_15(void)
 void __vector_13(void)
 {
     static uint8_t i = 0;
-    if (UART_u8ReceiveNoBlock(gPrece_str[i]))
+    gPrece_str[i] = UART_u8ReceiveNoBlock();
+    if (gPrece_str[i] == '\r')
+    {
+        gPrece_str[i] = '\0';
+        i = 0;
+    }
+    else
     {
         i++;
     }
+
     if (i > 98)
         i = 0;
 }

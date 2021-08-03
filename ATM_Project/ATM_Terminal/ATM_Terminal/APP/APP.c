@@ -15,6 +15,9 @@
 extern volatile uint8_t card_gflag;
 uint8_t Max_Amount[50] = {1, 1, 1, 1};
 volatile uint8_t CallBackFLag = 0;
+volatile uint8_t BUTTONFLag = INVALID;
+
+
 extern uint8_t gflag;
 /*******************************************************************/
 
@@ -24,9 +27,14 @@ extern uint8_t gflag;
  */
 void EX_Callback(void)
 {
+	BUTTONFLag = VALID;
+	SPI_VidSendByte('f');
+	card_gflag = SPI_U8RecieveByte();
+
 	if (gflag == 0 || card_gflag == '0')
 	{
 		SER_UARTvoidSendString((uint8_t *)"Invalid");
+		CallBackFLag = INVALID;
 	}
 	else
 	{
@@ -131,24 +139,14 @@ void USER_Mode(void)
 	uint8_t Dep_money[5] = {1, 1, 1, 1};
 	uint8_t Temp[255] = {1, 1, 1, 1, 1};
 	static volatile uint8_t Card_Pass[5] = {1, 1, 1, 1};
-	static uint8_t Flag = 3;
 
-	gflag = 1;
-	switch (Flag)
-	{
-	case 3:
-		Get_Pass(Card_Pass);
-		Flag = 5;
-		break;
-	default:
-		break;
-	}
+	Get_Pass(Card_Pass);
 
 	if (Pass_check(Card_Pass))
 	{
 
 		lcd_clear();
-		lcd_sendString((uint8_t *)"enter deposit amount");
+		lcd_sendString((uint8_t *)"enter withdraw amount");
 		/*receive the balance of user from eeprom*/
 		eeprom_recieve_string(Temp, 0xB1);
 
@@ -197,6 +195,9 @@ void USER_Mode(void)
 			MOTOR_voidStop();
 		}
 	}
+	lcd_clear();
+	lcd_sendString((uint8_t *)"please take the card");
+	_delay_ms(1000);
 }
 
 /**
@@ -317,13 +318,17 @@ uint8_t String_u8Comp(uint8_t *Str1, uint8_t *Str2)
  */
 void Get_Pass(uint8_t *str)
 {
-	SPI_VidSendByte('g');
+	SPI_VidSendByte('p');
 	str[0] = SPI_U8RecieveByte();
-	SPI_VidSendByte('g');
+	SPI_VidSendByte('p');
+	str[0] = SPI_U8RecieveByte();
+	SPI_VidSendByte('p');
+	str[0] = SPI_U8RecieveByte();
+	SPI_VidSendByte('p');
 	str[1] = SPI_U8RecieveByte();
-	SPI_VidSendByte('g');
+	SPI_VidSendByte('p');
 	str[2] = SPI_U8RecieveByte();
-	SPI_VidSendByte('x');
+	SPI_VidSendByte('X');
 	str[3] = SPI_U8RecieveByte();
 	str[4] = '\0';
 }

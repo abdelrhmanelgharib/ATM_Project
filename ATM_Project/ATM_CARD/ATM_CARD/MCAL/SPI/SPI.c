@@ -71,6 +71,26 @@ void SPI_VidSendString( uint8_t *copy_str)
 
 }
 
+
+uint8_t SPI_U8RecieveByte_admin(void)
+{
+	uint32_t count = 0;
+
+	while (!((SPSR) & (1 << SPIF)))
+	{ //wait until SPI interrupt flag=1(data is receive correctly)
+		if ((count == 3000000))
+		{
+
+			break;
+		}
+		else
+		{
+			count++;
+		}
+	}
+	return SPDR; //return the received byte from SPI data register
+}
+
 void SPI_VidRecieveString(uint8_t *copy_str)
 {
 	unsigned char i = 0;

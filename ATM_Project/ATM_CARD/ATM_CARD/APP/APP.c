@@ -12,18 +12,7 @@
 #include "APP.h"
 
 extern uint8_t gFlag;
-
-/**
- * @brief Call Back Function 
- * 
- */
-void EX_Callback(void)
-{
-	if (gFlag == 0)
-	{
-		SER_UARTvoidSendString("Invalid");
-	}
-}
+extern volatile uint8_t data_arr[100];
 
 /**
  * @brief Initialize all Peripheral
@@ -35,9 +24,6 @@ void APP_Init(void)
 	I2C_MasterInit();
 	SPI_VidInitSlave();
 	DIO_voidSetPinDirection(PORT_D, PIN2, INPUT);
-	EXTI_ENEnable(EXTI_INT0);
-	EXTI_ENTriggerEdge(EXTI_INT0, FALLING_EDGE);
-	EXTI_SetCallBack(EXTI_INT0, EX_Callback);
 }
 
 /**
@@ -47,7 +33,6 @@ void APP_Init(void)
  */
 void Admin_Mode(uint8_t *str)
 {
-
 	SER_UARTvoidSendString((uint8_t *)"Enter Card Holder Name: ");
 	SER_UARTvoidReceiveString(str);
 
@@ -61,8 +46,12 @@ void Admin_Mode(uint8_t *str)
 	SER_UARTvoidReceiveString(str);
 	eeprom_send_string(str);
 
-	SPI_U8RecieveByte();
+	SER_UARTvoidSendString((uint8_t *)"finishing setup the card.... ");
+	uint8_t B1 = SPI_U8RecieveByte_admin();
+
 	SPDR = '0';
+
+	SER_UARTvoidSendString((uint8_t *)"setup finished");
 }
 
 /**
@@ -72,16 +61,38 @@ void Admin_Mode(uint8_t *str)
  */
 void User_Mode(uint8_t *str)
 {
-
-	SPI_U8RecieveByte();
-	SPDR = '1';
-
+	uint8_t *YES = (uint8_t *)"YES";
 	uint8_t i = 0;
+	uint8_t B1 = 0;
 	eeprom_recieve_string(str);
-	while (SPI_U8RecieveByte() == 'g')
+	UART_voidRXInterruptEnable();
+	SER_UARTvoidSendString("if you want to change the mode press YES");
+
+	while (1)
 	{
-		SPDR = str[i];
-		i++;
+		i = 0;
+		if (String_u8Comp(data_arr, "YES") == STRING_EQUL)
+		{
+			SER_UARTvoidSendString(data_arr);
+			data_arr[0] = 0;
+			break;
+		}
+		B1 = SPI_U8RecieveByte();
+
+		if (B1 == 'f')
+		{
+			SPDR = '1';
+		}
+		else if (B1 == 'p')
+		{
+			while (SPI_U8RecieveByte() == 'p')
+			{
+
+				SPDR = str[i];
+				i++;
+			}
+			
+		}
 	}
 }
 

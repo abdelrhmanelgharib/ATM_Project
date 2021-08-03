@@ -16,7 +16,7 @@ void SPI_VidSendByte(const uint8_t copy_U8Data);
 uint8_t SPI_U8RecieveByte(void);
 void SPI_VidSendString(uint8_t *copy_str);
 void SPI_VidRecieveString(uint8_t *copy_str);
-
+uint8_t SPI_U8RecieveByte_admin(void);
 
 
 #endif /* SPI_INTERFACE_H_ */
