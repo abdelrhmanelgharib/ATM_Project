@@ -14,6 +14,7 @@
 uint8_t volatile card_gflag = 0;
 uint8_t volatile gflag = 0;
 extern volatile uint8_t CallBackFLag;
+extern volatile uint8_t BUTTONFLag;
 
 int main()
 {
@@ -42,28 +43,33 @@ int main()
 			/* Admin */
 			if (String_u8Comp(Data, Admin) == STRING_EQUL)
 			{
+				SPI_VidSendByte('f');
+				uint8_t B1 = SPI_U8RecieveByte();
 				gflag = INVALID;
 
 				ADMIN_Mode();
 			}
 			else if (String_u8Comp(Data, User) == STRING_EQUL)
 			{
+				SPI_VidSendByte('f');
+				uint8_t B1 = SPI_U8RecieveByte();
 				static uint8_t FlFag = 5;
 				gflag = VALID;
-				if (5 == FlFag)
-				{
-					SPI_VidSendByte('g');
-					uint8_t b1 = SPI_U8RecieveByte();
-					SPI_VidSendByte('g');
-					card_gflag = SPI_U8RecieveByte();
-					FlFag = VALID;
-				}
 
 				SER_UARTvoidSendString((uint8_t *)"waiting for card to insert");
-				while (CallBackFLag != VALID)
+				while (BUTTONFLag != VALID)
 					;
-				USER_Mode();
-				CallBackFLag = INVALID;
+
+				if (CallBackFLag == VALID)
+				{
+					SER_UARTvoidSendString("USERMODE");
+					USER_Mode();
+				}
+				BUTTONFLag = INVALID;
+			}
+			else
+			{
+				SER_UARTvoidSendString((uint8_t *)"Wrong Enter");
 			}
 		}
 		else

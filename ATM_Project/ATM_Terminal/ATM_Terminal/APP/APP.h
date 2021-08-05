@@ -47,7 +47,7 @@ void EX_Callback(void);
 
 /**
  * @brief Initialize all Peripheral
- * 
+ *  
  */
 void APP_Init(void);
 

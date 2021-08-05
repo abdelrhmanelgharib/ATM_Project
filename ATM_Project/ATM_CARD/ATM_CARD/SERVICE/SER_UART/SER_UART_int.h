@@ -31,13 +31,6 @@ void SER_UARTvoidSendString(uint8_t *Str);
 void SER_UARTvoidReceiveString(uint8_t *Str);
 
 
-/**
- * @brief Receive No Blocking 
- * 
- * @param Str Store String in Str
- */
-void SER_UARTvoidReceiveStringNoBLOCKING(uint8_t *Str);
-
 
 /**
  * @brief Send Number

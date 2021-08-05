@@ -44,30 +44,7 @@ void SER_UARTvoidReceiveString(uint8_t *Str)
     Str[i] = 0;
 }
 
-/**
- * @brief Receive No Blocking 
- * 
- * @param Str Store String in Str
- */
-void SER_UARTvoidReceiveStringNoBLOCKING(uint8_t *Str)
-{
-    uint8_t i = 0, Data = 0;
-    do
-    {
-        if (UART_u8ReceiveNoBlock(&Data))
-        {
-            Str[i] = Data;
-            i++;
-        }
-        else
-        {
-            break;
-        }
-    } while (Str[i] - 1 != '\r');
 
-    /* replace to NULL */
-    Str[i - 1] = '\0';
-}
 
 /**
  * @brief Send Number

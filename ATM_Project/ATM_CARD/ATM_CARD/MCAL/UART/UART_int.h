@@ -62,7 +62,7 @@ uint8_t UART_u8ReceiveData(void);
  * @param Data 
  * @return uint8_t Data From Register
  */
-uint8_t UART_u8ReceiveNoBlock(uint8_t *Data);
+uint8_t UART_u8ReceiveNoBlock(void);
 
 
 
@@ -79,6 +79,19 @@ void UART_voidTXInterruptEnable(void);
  * 
  */
 void UART_voidRXInterruptEnable(void);
+
+/**
+ * @brief Disable Transmit Interrupt
+ *
+ */
+void UART_voidTXInterruptDisable(void);
+
+
+/**
+ * @brief Disable Receive Interrupt
+ *
+ */
+void UART_voidRXInterruptDisable(void);
 
 
 /**
