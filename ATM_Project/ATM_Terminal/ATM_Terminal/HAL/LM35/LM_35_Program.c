@@ -15,7 +15,7 @@ void LM35_VoidInit(void)
 }
 
 
-u16 LM35_U16Read(uint8_t Copy_u8readchannel)
+uint16_t LM35_U16Read(uint8_t Copy_u8readchannel)
 {
 	uint32_t temp = 0;
 	temp = ADC_U16GetChannelReading(Copy_u8readchannel); /* read channel two where the temp sensor is connect */

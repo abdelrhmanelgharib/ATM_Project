@@ -13,11 +13,14 @@ void eeprom_send_string(uint8_t *str,uint8_t address)
 	I2C_MasterStart();
 	I2C_SendSlaveAddressWithWrite(0b01010000);
 	I2C_WriteDataByte(address);
+	I2C_WriteDataByte(address);
 	while (str[i] != '\0')
 	{
 		I2C_WriteDataByte(str[i]);
 		i++;
 	}
+	str[i] = '\0';
+	I2C_WriteDataByte(str[i]);
 	I2C_MasterStop();
 }
 void eeprom_recieve_string(uint8_t *str,uint8_t address)
@@ -27,15 +30,20 @@ void eeprom_recieve_string(uint8_t *str,uint8_t address)
 	I2C_MasterStart();
 	I2C_SendSlaveAddressWithWrite(0b01010000);
 	I2C_WriteDataByte(address);
+	I2C_WriteDataByte(address);
 
+	I2C_MasterStart();
+	I2C_SendSlaveAddressWithRead(0b01010000);
+	str[i] = I2C_ReadDataByte();
 	while (str[i] != '\0')
 	{
+		i++;
 		I2C_MasterStart();
 		I2C_SendSlaveAddressWithRead(0b01010000);
 		str[i] = I2C_ReadDataByte();
 
 		I2C_MasterStop();
-		i++;
+
 	}
 	str[i]='\0';
 

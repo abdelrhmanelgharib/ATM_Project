@@ -6,7 +6,7 @@
  * @date 2021-07-13
  * 
  */
-#include "avr/delay.h"
+
 #include "UART_int.h"
 
 static uint8_t *gPsend_str = NULLPTR;
@@ -22,7 +22,7 @@ EN_ERRORSTATE_t UART_ENInit(void)
     EN_ERRORSTATE_t Enstate;
     Enstate = E_OK;
     /* Clear  URSEL to update UBRRH*/
-    // CLRBIT(UCSRC, URSEL);
+    CLRBIT(UCSRC, URSEL);
     /* Boud Rate */
     UBRRH = HIGHUBRR;
     UBRRL = LOWUBRR;
@@ -165,7 +165,7 @@ uint8_t UART_u8ReceiveData(void)
 /**
  * @brief Receive Data without Polling
  * 
- * 
+ * @param Data
  * @return uint8_t Data From Register
  */
 uint8_t UART_u8ReceiveNoBlock(void)
@@ -195,7 +195,7 @@ void UART_voidRXInterruptEnable(void)
 
 /**
  * @brief Disable Transmit Interrupt
- * 
+ *
  */
 void UART_voidTXInterruptDisable(void)
 {
@@ -205,7 +205,7 @@ void UART_voidTXInterruptDisable(void)
 
 /**
  * @brief Disable Receive Interrupt
- * 
+ *
  */
 void UART_voidRXInterruptDisable(void)
 {

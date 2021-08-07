@@ -134,7 +134,7 @@
 
 #define ADCH    (*(volatile uint8_t*) 0x25)
 #define ADCL    (*(volatile uint8_t*) 0x24)
-#define ADC	    (*(volatile u16*)0x24)
+#define ADC	    (*(volatile uint16_t*)0x24)
 
 /*******************************************************************************
  *                           UART Registers                                     *

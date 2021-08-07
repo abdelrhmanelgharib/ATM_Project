@@ -10,6 +10,7 @@
  */
 
 #include "APP.h"
+#include "util/delay.h"
 
 extern uint8_t gFlag;
 extern volatile uint8_t data_arr[100];
@@ -40,11 +41,13 @@ void Admin_Mode(uint8_t *str)
 	SER_UARTvoidReceiveString(str);
 	/* Send Card Number To EEPROM */
 	eeprom_send_string(str);
+	_delay_ms(10);
 
 	/* Send Password to EEPROM */
 	SER_UARTvoidSendString((uint8_t *)"Enter Passwrod: ");
 	SER_UARTvoidReceiveString(str);
 	eeprom_send_string(str);
+	_delay_ms(10);
 
 	SER_UARTvoidSendString((uint8_t *)"finishing setup the card.... ");
 	uint8_t B1 = SPI_U8RecieveByte_admin();
@@ -65,6 +68,8 @@ void User_Mode(uint8_t *str)
 	uint8_t i = 0;
 	uint8_t B1 = 0;
 	eeprom_recieve_string(str);
+	_delay_ms(10);
+	SER_UARTvoidSendString(str);
 	UART_voidRXInterruptEnable();
 	SER_UARTvoidSendString("if you want to change the mode press YES");
 
@@ -87,11 +92,10 @@ void User_Mode(uint8_t *str)
 		{
 			while (SPI_U8RecieveByte() == 'p')
 			{
-
 				SPDR = str[i];
 				i++;
 			}
-			
+
 		}
 	}
 }
@@ -107,9 +111,9 @@ uint8_t String_u8Comp(uint8_t *Str1, uint8_t *Str2)
 {
 	uint8_t i = 0, Flag = 0;
 
-	while (Str1[i] || Str2[i])
+	while (Str1[i+1] || Str2[i])
 	{
-		if (Str1[i] != Str2[i])
+		if (Str1[i+1] != Str2[i])
 		{
 			Flag = 1;
 			break;

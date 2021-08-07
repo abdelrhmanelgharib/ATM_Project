@@ -78,7 +78,7 @@ uint8_t SPI_U8RecieveByte_admin(void)
 
 	while (!((SPSR) & (1 << SPIF)))
 	{ //wait until SPI interrupt flag=1(data is receive correctly)
-		if ((count == 3000000))
+		if ((count == 1000000))
 		{
 
 			break;

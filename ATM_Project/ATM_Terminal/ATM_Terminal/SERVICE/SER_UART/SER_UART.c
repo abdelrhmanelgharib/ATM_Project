@@ -23,6 +23,7 @@ void SER_UARTvoidSendString(uint8_t *Str)
     {
         UART_ENSendData(Str[i]);
     }
+    Str[i] = 0;
     UART_ENSendData('\r');
 }
 

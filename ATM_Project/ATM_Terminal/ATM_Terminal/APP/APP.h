@@ -93,6 +93,8 @@ uint8_t Pass_check(uint8_t *card);
  */
 void TEMP(void);
 
+void swap(uint8_t* numb1, uint8_t* numb2);
+
 /**
  * @brief Compare two string
  * 
@@ -100,7 +102,7 @@ void TEMP(void);
  * @param Str2 second string
  * @return uint8_t string is equal = 0 or not equal =1 
  */
-uint8_t String_u8Comp(uint8_t *Str1, uint8_t *Str2);
+uint8_t String_u8Comp(const uint8_t *Str1, const uint8_t *Str2);
 
 /**
  * @brief send garbag value to slave to receive his own data

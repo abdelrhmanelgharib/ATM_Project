@@ -24,6 +24,8 @@ void SER_UARTvoidSendString(uint8_t *Str)
         UART_ENSendData(Str[i]);
     }
     UART_ENSendData('\r');
+
+//    UART_ENSendData(i+ '0');
 }
 
 /**
@@ -42,6 +44,7 @@ void SER_UARTvoidReceiveString(uint8_t *Str)
     }
     /* replace to NULL */
     Str[i] = 0;
+//    UART_ENSendData(i+ '0');
 }
 
 

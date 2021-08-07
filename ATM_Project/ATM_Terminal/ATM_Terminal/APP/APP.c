@@ -10,7 +10,7 @@
  */
 
 #include "APP.h"
-
+#include "util/delay.h"
 /***************************Global Var********************************/
 extern volatile uint8_t card_gflag;
 uint8_t Max_Amount[50] = {1, 1, 1, 1};
@@ -48,6 +48,8 @@ void EX_Callback(void)
  */
 void APP_Init(void)
 {
+	DIO_voidSetPinDirection(PORT_A, PIN2, OUTPUT);
+	DIO_voidSetPinValue(PORT_A, PIN2, LOW);
 	UART_ENInit();
 	I2C_MasterInit();
 	KEYPAD_voidInit();
@@ -56,7 +58,9 @@ void APP_Init(void)
 	MOTOR_voidInit();
 	ADC_VoidInit();
 	LM35_VoidInit();
-
+	/* UART DIRECTION  */
+	DIO_voidSetPinDirection(PORT_D, PIN0, INPUT);
+	DIO_voidSetPinDirection(PORT_D, PIN1, OUTPUT);
 	/* Set Direction for EXTI */
 	DIO_voidSetPinDirection(PORT_D, PIN2, INPUT);
 	DIO_voidInpullUp(PORT_D, PIN2);
@@ -98,11 +102,12 @@ void ADMIN_Mode(void)
 {
 	uint8_t *Admin = (uint8_t *)"ADMIN";
 	/* used for take password, card number and balance */
-	uint8_t Data[55] = {1, 1, 1, 1, 1, 1, 1, 1, 1};
+	uint8_t Data[55]={1,1,1,1,1};
 
 	gflag = 0;
 	SER_UARTvoidSendString((uint8_t *)"Enter Password of Admin Mode: ");
 	SER_UARTvoidReceiveString(Data);
+
 	if (String_u8Comp(Data, Admin) == STRING_EQUL)
 	{
 		SER_UARTvoidSendString((uint8_t *)"Correct Password");
@@ -138,14 +143,14 @@ void USER_Mode(void)
 	uint8_t value = 0;
 	uint8_t Dep_money[5] = {1, 1, 1, 1};
 	uint8_t Temp[255] = {1, 1, 1, 1, 1};
-	static volatile uint8_t Card_Pass[5] = {1, 1, 1, 1};
+	static volatile uint8_t Card_Pass[5];
 
 	Get_Pass(Card_Pass);
 
 	if (Pass_check(Card_Pass))
 	{
-		lcd_clear();
-		lcd_sendString((uint8_t *)"enter withdraw amount");
+		LCD_voidCLRDisplay();
+		LCD_voidWriteString((uint8_t *)"enter withdraw amount");
 
 		/*receive the balance of user from eeprom*/
 		eeprom_recieve_string(Temp, 0xB1);
@@ -166,9 +171,25 @@ void USER_Mode(void)
 
 		eeprom_recieve_string(Max_Amount, 0xF3);
 
+		for(uint8_t i =0; i< 4;i++)
+		{
+			swap(&Max_Amount[i], &Max_Amount[i+1]); // g 1 2 3 4    /   1 g 2 3 4  / 1 2 g 3 4/ 1 2 3  g 4 / 1 2 3 4 g
+		}
+		Max_Amount[4] = '\0';
+
+
+		for(uint8_t i =0; i< 5;i++)
+		{
+			swap(&Temp[i], &Temp[i+1]); // g 1 2 3 4    /   1 g 2 3 4  / 1 2 g 3 4/ 1 2 3  g 4 / 1 2 3 4 g
+		}
+		Temp[5] = '\0';
+
+
 		uint32_t max_dec = String_u8ToNumb(Max_Amount);
 		uint32_t dep_dec = String_u8ToNumb(Dep_money);
 		uint32_t bal_dec = String_u8ToNumb(Temp);
+
+
 
 		if (Compare_Money(max_dec, dep_dec) == INVALID)
 		{
@@ -195,8 +216,8 @@ void USER_Mode(void)
 			MOTOR_voidStop();
 		}
 	}
-	lcd_clear();
-	lcd_sendString((uint8_t *)"please take the card");
+	LCD_voidCLRDisplay();
+	LCD_voidWriteString((uint8_t *)"please take the card");
 	_delay_ms(1000);
 }
 
@@ -249,6 +270,13 @@ uint8_t Pass_check(uint8_t *Card_Pass)
 		}
 	}
 	Pin[4] = '\0';
+	for(uint8_t i =0; i< 4;i++)
+	{
+		swap(&Card_Pass[i], &Card_Pass[i+1]); // g 1 2 3 4    /   1 g 2 3 4  / 1 2 g 3 4/ 1 2 3  g 4 / 1 2 3 4 g
+	}
+	Card_Pass[4] = '\0';
+
+
 
 	LCD_voidCLRDisplay();
 	LCD_voidWriteString((uint8_t *)"PASS finished");
@@ -270,6 +298,13 @@ uint8_t Pass_check(uint8_t *Card_Pass)
 	}
 
 	return Flag;
+}
+void swap(uint8_t* numb1, uint8_t* numb2)
+{
+	uint8_t temp;
+	temp = *numb1;
+	*numb1 = *numb2;
+	*numb2 = temp;
 }
 
 /**
@@ -295,19 +330,19 @@ void TEMP(void)
  * @param Str2 second string
  * @return uint8_t string is equal = 0 or not equal =1 
  */
-uint8_t String_u8Comp(uint8_t *Str1, uint8_t *Str2)
+uint8_t String_u8Comp(const uint8_t *Str1, const uint8_t *Str2)
 {
 	uint8_t i = 0, Flag = 0;
-
-	while (Str1[i] || Str2[i])
+	while (Str1[i+1] || Str2[i])
 	{
-		if (Str1[i] != Str2[i])
+		if (Str1[i+1] != Str2[i])
 		{
 			Flag = 1;
 			break;
 		}
 		i++;
 	}
+
 	return Flag;
 }
 
@@ -319,7 +354,7 @@ uint8_t String_u8Comp(uint8_t *Str1, uint8_t *Str2)
 void Get_Pass(uint8_t *str)
 {
 	SPI_VidSendByte('p');
-	str[0] = SPI_U8RecieveByte();
+	SPI_VidSendByte('p');
 	SPI_VidSendByte('p');
 	str[0] = SPI_U8RecieveByte();
 	SPI_VidSendByte('p');
@@ -331,6 +366,7 @@ void Get_Pass(uint8_t *str)
 	SPI_VidSendByte('X');
 	str[3] = SPI_U8RecieveByte();
 	str[4] = '\0';
+
 }
 
 /**

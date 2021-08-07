@@ -11,7 +11,7 @@
 
 
 /*Function Prototype*/
-u16 LM35_U16Read(uint8_t  Copy_u8readchannel);
+uint16_t LM35_U16Read(uint8_t  Copy_u8readchannel);
 void LM35_VoidInit(void);
 
 #endif /* LM_35_INTERFACE_H_ */

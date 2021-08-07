@@ -25,27 +25,29 @@ volatile uint8_t data_arr[100];
 int main()
 {
 	uint8_t Data[55];
+	uint8_t Data1[55];
 	uint8_t *Admin = (uint8_t *)"ADMIN";
 	uint8_t *User = (uint8_t *)"USER";
 
 	APP_Init();
 	UART_voidReceiveString_Ashync(data_arr);
-
 	while (1)
 	{
 		UART_voidRXInterruptDisable();
 		SER_UARTvoidSendString("you want user or admin mode ?");
 
-		SER_UARTvoidReceiveString(Data);
+		SER_UARTvoidReceiveString(Data1);
+		SER_UARTvoidReceiveString(Data1);
+		SER_UARTvoidSendString(Data1);
 
 		/* Admin */
-		if (String_u8Comp(Data, Admin) == STRING_EQUL)
+		if (String_u8Comp(Data1, Admin) == STRING_EQUL)
 		{
 			gFlag = INVALID;
 
 			Admin_Mode(Data);
 		}
-		else if (String_u8Comp(Data, User) == STRING_EQUL)
+		else if (String_u8Comp(Data1, User) == STRING_EQUL)
 		{
 			gFlag = VALID;
 
